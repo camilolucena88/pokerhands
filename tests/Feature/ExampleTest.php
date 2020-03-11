@@ -16,6 +16,20 @@ class ExampleTest extends TestCase
     {
         $response = $this->get('/');
 
+        $response->assertRedirect('/login');
+    }
+
+    /**
+     * A basic test example.
+     *
+     * @return void
+     */
+    public function userAuthenticated()
+    {
+        $this->actingAs(factory(User::class)->create());
+
+        $response = $this->get('/');
+
         $response->assertStatus(200);
     }
 }
