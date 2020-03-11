@@ -5,7 +5,7 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">Dashboard</div>
+                <div class="card-header">Players</div>
 
                 <div class="card-body">
                     @if (session('status'))
@@ -13,8 +13,27 @@
                             {{ session('status') }}
                         </div>
                     @endif
-
-                    You are logged in!
+                        <div style="padding-top: 30px">
+                            <span>Total: </span>
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Total Wins</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <th scope="row">{{Auth::user()->name }}</th>
+                                    <td>{{ Auth::user()->email }}</td>
+                                    <td>{{ DB::table('wins')->count() }}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <p>
+                            </p>
+                        </div>
                 </div>
             </div>
         </div>
