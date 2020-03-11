@@ -2,84 +2,45 @@
 
 namespace App\Http\Controllers;
 
-use App\Round;
-use Illuminate\Http\Request;
+use App\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class RoundController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @param $hands
+     * @return void
      */
-    public function create()
+    public function create($hands)
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Round  $round
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Round $round)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Round  $round
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Round $round)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Round  $round
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Round $round)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Round  $round
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Round $round)
-    {
-        //
+        foreach (array_chunk($hands, 10) as $hand){
+            $round_id = DB::table('rounds')->insertGetId([
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+            $cards_player_1 = array_slice($hand, 0,5);
+            foreach ($cards_player_1 as $card){
+                DB::table('hands')->insert(
+                    [
+                        'round_id'=> $round_id,
+                        'card_id' => $card,
+                        'user_id' =>Auth::id(),
+                    ]
+                );
+            }
+            $cards_player_2 = array_slice($hand, 5,5);
+            foreach ($cards_player_2 as $card){
+                DB::table('hands')->insert(
+                    [
+                        'round_id'=> $round_id,
+                        'card_id' => $card,
+                        'user_id' => User::where('name','system')->first()->id,
+                    ]
+                );
+            }
+        }
+        return redirect('/');
     }
 }

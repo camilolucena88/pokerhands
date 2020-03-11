@@ -2,84 +2,129 @@
 
 namespace App\Http\Controllers;
 
-use App\Hand;
+use App\Card;
+use App\Round;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 
 class HandController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * HandController constructor.
      */
-    public function index()
+    public function __construct()
     {
-        //
+        $this->middleware('auth');
     }
-
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @param  Request  $request
+     * @return array|void
      */
-    public function create()
+    public function create(Request $request)
     {
-        //
+        $this->upload($request);
+        $round = Round::all();
+        return view('hands',['round' => $round]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Show the hands view to upload or to play.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function store(Request $request)
+    public function index()
     {
-        //
+        $round = Round::all();
+        return view('hands',['round' => $round]);
+    }
+
+     /**
+     * Upload file with hands per player.
+     *
+     * @param  $request
+     * @return void
+     */
+    public function upload($request)
+    {
+        $hands = $this->validateHand($request);
+        $hand = new RoundController();
+        $hand->create($hands);
+    }
+
+
+    /**
+     * Validate file input before store it.
+     *
+     * TODO: Check if the hands are valid or if there are other values that are not valid
+     *
+     * @param  $request
+     * @return array|void
+     */
+    public function validateHand($request)
+    {
+        $hands = File::get($request->file('hands'));
+        return $this->decode($hands);
     }
 
     /**
-     * Display the specified resource.
+     * Decode the file, in order to delete spaces and to check if which id are.
      *
-     * @param  \App\Hand  $hand
-     * @return \Illuminate\Http\Response
+     * @param $hands
+     * @return array
      */
-    public function show(Hand $hand)
+    public function decode($hands)
     {
-        //
+        $cards = preg_split("/[\s.]+/", $hands);
+        $cards_decoded = [];
+        foreach ($cards as $key => $card){
+            if(!empty($card))
+                $cards_decoded[] = Card::where('card','=',$card)->first()->id;
+        }
+        return $cards_decoded;
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Run the rounds and get the winner, after return the view.
      *
-     * @param  \App\Hand  $hand
-     * @return \Illuminate\Http\Response
+     * @param  Request  $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function edit(Hand $hand)
+    public function play(Request $request)
     {
-        //
+        $rounds = Round::all();
+        $user_id = Auth::user()->id;
+        $system = DB::table('users')->where('name', 'system')->first()->id;
+        foreach ($rounds as $round){
+            $hand_player_1 = $this->getHandsPerPlayer($round, $user_id);
+            $hand_player_2 = $this->getHandsPerPlayer($round, $system);
+            $win = new WinController($round->id);
+            $win->getWinner($hand_player_1,$hand_player_2);
+        }
+        return view('home');
     }
 
     /**
-     * Update the specified resource in storage.
+     * Get player 1 and player 2 rounds and return hands
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Hand  $hand
-     * @return \Illuminate\Http\Response
+     * @param $round
+     * @param $player_id
+     * @return array
      */
-    public function update(Request $request, Hand $hand)
+    public function getHandsPerPlayer($round,$player_id)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Hand  $hand
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Hand $hand)
-    {
-        //
+        $cards = DB::table('hands')
+            ->where('round_id', $round->id)
+            ->where('user_id', $player_id)
+            ->take(5)
+            ->get();
+        foreach ($cards as $card){
+            $hand[] = $card->card_id;
+        }
+        sort($hand);
+        return $hand;
     }
 }
