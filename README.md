@@ -17,9 +17,15 @@ Laravel 6.0
 
 git clone https://github.com/camilolucena88/pokerhands
 
+## Update Dependencies
+
+composer update
+
 ## Set up Database
 
 Copy and rename the .env.example to .env and get the APP_KEY
+
+php artisan php artisan key:generate
 
 ## Migration
 
