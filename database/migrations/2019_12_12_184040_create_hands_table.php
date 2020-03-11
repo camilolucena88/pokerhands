@@ -15,6 +15,9 @@ class CreateHandsTable extends Migration
     {
         Schema::create('hands', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->integer('round_id');
+            $table->integer('card_id');
+            $table->integer('user_id');
             $table->timestamps();
         });
     }

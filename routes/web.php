@@ -11,6 +11,12 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/hands', 'HandController@index')->name('hands');
+
+Route::post('/hands', 'HandController@create')->name('hands');
+
+Route::get('/play', 'HandController@play')->name('round');
+
+Auth::routes();
+
+Route::get('/', 'HomeController@index')->name('home');

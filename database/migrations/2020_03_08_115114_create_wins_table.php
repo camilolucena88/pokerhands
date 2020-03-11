@@ -15,6 +15,10 @@ class CreateWinsTable extends Migration
     {
         Schema::create('wins', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->integer('round_id');
+            $table->integer('user_id');
+            $table->integer('score_player_1');
+            $table->integer('score_player_2');
             $table->timestamps();
         });
     }
