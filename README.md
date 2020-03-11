@@ -25,7 +25,7 @@ composer update
 
 Copy and rename the .env.example to .env and get the APP_KEY
 
-php artisan php artisan key:generate
+>php artisan key:generate
 
 ## Migration
 
